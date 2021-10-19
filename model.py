@@ -4,11 +4,18 @@
 ### To reproduce simulations with the same number of statistics as in the paper, be prepared to run some of the parameter sweeps for multiple months
 ### During this time, keep an eye on the RAM. The fracture arrays are emptied every 10000 steps, but a dynamic grid means that 100s of millions of sties will be stored,
 ###        each with their own pressure and with random heterogeneity
+### Generating statistics for this paper required RAM in excess of 100GB.
+
+
+### Code alternates between two processes: finding sites that fail, and advancing fluid flow.
+### All sites will fail first, then when "stability" is reached, the fluid field advances, universally increasing pressure
+### New sites are found to be broken
 
 ### Some notes when running this code:
 ### This code does not use numpy. I'm not convinced it would speed it up.
 ### A lower s_max makes the code slower
-### Higher s_max makes the code faster, but very memory intensive. 
+### Higher s_max makes the code faster, but very memory intensive.
+### MUST compile with pypy (was written when pypy didn't work well with numpy). Speedup is a much needed order of magnitude.
 
 ### @Author: Cole Lord-May. clordmay@eoas.ubc.ca
 ### Published in Seismic hazard due to fluid injections, PHYSICAL REVIEW RESEARCH 2, 043324 (2020)
@@ -120,6 +127,7 @@ def breaks_loopless(iterations,delta_p,s_min,s_max,tau_max):
         if l_max!=l_max_previous: 
 
             ### Pick which pressure profile you want!
+            ### Options are exponential, linear, and inverse, all starting at (0,1) and going to (l_max,delta_p)
             p_list=[delta_p**(float(l)/float(l_max)) for l in range(0,l_max+1)] #Exponential
             #p_list=[1- (1-delta_p)/l_max*l for l in range(0,l_max+1)] #Linear
             #p_list=[1/((1-delta_p)/(l_max*delta_p)*l+1) for l in range(0,l_max+1)] #Inverse
